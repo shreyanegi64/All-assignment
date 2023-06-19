@@ -1,0 +1,26 @@
+version: v1
+name: dt-quality-customer
+type: workflow
+workflow:
+  dag:
+    - name: quality-metrics01
+      spec:
+        stack: toolbox
+        compute: runnable-default
+        toolbox:
+          dataset: dataos://icebase:sys01/quality_metrics?acl=rw 
+          action:
+            name: set_version
+            value: latest            
+
+    - name: quality-checks
+      spec:
+        stack: toolbox
+        compute: runnable-default
+        toolbox:
+          dataset: dataos://icebase:sys01/quality_checks?acl=rw 
+          action:
+            name: set_version
+            value: latest 
+      dependencies: 
+            - quality-metrics01

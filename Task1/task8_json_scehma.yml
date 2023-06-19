@@ -1,0 +1,66 @@
+version: v1
+name: wf-sports-data-product       # Workflow name
+type: workflow
+tags:  
+  - product
+description: Workflow to ingest sports_data product csv
+workflow:  
+  title: product csv 
+  dag:    
+    - name: sports-test1
+      title: sports_data Dag
+      description: This job ingests product csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - product    
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_product                                                                                              
+                dataset: dataos://azureexternal01:sports_data/products/
+                format: CSV
+                schemaType : sparkjson
+                schemaPath: dataos://azureexternal01:sports_data/schema/product_schema.json
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: product                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                  sql: > 
+                    SELECT *
+                    from sports_data_product   
+                  functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+                                                     
+            outputs:              
+              - name: product
+                dataset: dataos://icebase:test/sample_products?acl=rw
+                format: Iceberg
+                title: sports_data
+                description: this dataset contains product csv from sports_data 
+                tags:                                                                     
+                  - product
+                options:                  
+                  saveMode: overwrite
+
+    
+    - name: dataos-tool-sports-test2
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:test/sample_products?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test1
+
+

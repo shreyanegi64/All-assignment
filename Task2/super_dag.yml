@@ -1,0 +1,30 @@
+version: v1
+name: super-dag-all-files
+type: workflow
+description: ingest multiple files using super dag
+workflow:  
+  title: ingest multiple file 
+  dag:     
+    - name: customer
+      file: /home/shreyanegi/Documents/flare_assignment1/customer.yml
+
+    - name: product_category
+      file: /home/shreyanegi/Documents/flare_assignment1/product_category.yml
+
+    - name: product_sub_category
+      file: /home/shreyanegi/Documents/flare_assignment1/product_sub_category.yml
+
+    - name: product
+      file: /home/shreyanegi/Documents/flare_assignment1/product.yml
+
+    - name: return
+      file: /home/shreyanegi/Documents/flare_assignment1/return.yml
+
+    - name: sales
+      file: /home/shreyanegi/Documents/flare_assignment1/Sales.yml
+
+    - name: territory
+      file: /home/shreyanegi/Documents/flare_assignment1/territory.yml
+
+    
+      

@@ -1,0 +1,27 @@
+version: v1
+name: customer-profiling
+type: workflow
+tags:
+description: The job is to profiling customer data 
+workflow:
+  dag:
+    - name: profiling-customer
+      description: The job performs profiling on customer data
+      spec:
+        stack: flare:3.0
+        compute: runnable-default
+        persistentVolume:
+          name: persistent-v
+          directory: fides
+        flare:
+          job:
+            explain: true
+            inputs:
+              - name: profile_customer
+                dataset: dataos://icebase:sports/sample_customer?acl=rw
+                format: Iceberg
+
+            logLevel: WARN
+            profile:
+              level: basic
+              

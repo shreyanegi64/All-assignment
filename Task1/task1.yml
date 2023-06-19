@@ -1,0 +1,62 @@
+---
+version: v1
+name: wf-sports-test      
+type: workflow
+tags:  
+  - Tier.Gold
+description: Workflow to ingest sports_data customer csv
+workflow:  
+  title: customer csv 
+  dag:    
+    - name: sports-test
+      title: sports_data Dag 
+      description: This job ingests customer csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - Tier.Gold    
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_customer                                                                                              
+                dataset: dataos://azureexternal01:sports_data/customers/
+                format: CSV
+ 
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: customer                                               
+                  sql: > 
+                    SELECT *
+                    from sports_data_customer                       
+                                                 
+            outputs:              
+              - name: customer
+                dataset: dataos://icebase:test/sample_customers?acl=rw
+
+                title: sports_data
+                description: this dataset contains customer csv from sports_data 
+
+                tags:                                                                     
+                  - Tier.Gold 
+                options:                  
+                  saveMode: overwrite
+
+    
+    - name: dataos-tool-sports-test
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:test/sample_customers?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test
+
+

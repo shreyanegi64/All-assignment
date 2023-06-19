@@ -1,0 +1,29 @@
+version: v1
+name: icebase-depot-profile01 
+type: workflow
+tags:
+  - icebase-scanner2
+description: The job scans schema tables and register metadata
+workflow:
+  dag:
+    - name: profile-icebase-depot01
+      description: The job scans schema from icebase depot tables and register metadata to metis2
+      spec:
+        tags:
+          - scanner2.0
+        stack: scanner:2.0
+        compute: runnable-default
+        runAsUser: metis
+        scanner:
+          depot: dataos://icebase
+          type: profiler
+          sourceConfig:
+            config:
+              schemaFilterPattern:
+                includes:
+                  - test
+
+              tableFilterPattern:
+                includes:
+                  - sample_customer 
+                  

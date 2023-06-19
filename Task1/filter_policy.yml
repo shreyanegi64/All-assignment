@@ -1,0 +1,22 @@
+name: test-policy-usecase-filter-to-city
+version: v1beta1
+type: policy
+layer: user
+description: "data policy to filter gender data"
+owner:
+policy:  
+  data:    
+    type: filter
+    priority: 80    
+    selector:      
+      user:        
+        match: any
+        tags:          
+          - "users:id:darshanajmera"    
+    filters:      
+      - column: gender
+        operator: not_equals
+        value: F
+    depot: icebase
+    collection: sports
+    dataset: sample_customer

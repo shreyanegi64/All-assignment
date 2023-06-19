@@ -1,0 +1,1 @@
+`product_key` INTEGER,`product_subcategory_key` STRING,`product_sku` STRING,`product_name` STRING,`model_name` STRING,`product_description` STRING,`product_color` STRING,`product_size` STRING,`product_style` STRING,`product_cost` INTEGER,`product_price` INTEGER

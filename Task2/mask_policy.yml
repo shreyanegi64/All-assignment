@@ -1,0 +1,24 @@
+name: test-policy-usecase
+version: v1
+type: policy
+layer: user
+description: "policy to hash on column "
+policy:  
+  data:    
+    type: mask
+    priority: 90    
+    depot: icebase
+    collection: sports
+    dataset: sample_customer  
+    selector:      
+      user:        
+        match: any
+        tags:          
+          - "users:id:darshanajmera"      
+      column:        
+        names:          
+          - "email_address"    
+    mask:      
+      operator: hash
+      hash:        
+        algo: sha256

@@ -1,0 +1,16 @@
+version: v1
+name: super-dag
+type: workflow
+description: ingest multiple files using super dag
+workflow:  
+  title: ingest multiple file 
+  dag:     
+    - name: customer
+      file: /home/shreyanegi/Documents/flare_assignment1/customer.yml
+
+    - name: return
+      file: /home/shreyanegi/Documents/flare_assignment1/return.yml
+      dependencies:      
+      - customer
+
+

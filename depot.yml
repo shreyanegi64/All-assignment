@@ -1,0 +1,21 @@
+---
+version: v1
+name: "azureexternal01"
+type: depot
+description: Connection to the blob storage 
+layer: user
+depot:
+    type: ABFSS
+    compute: query-default
+    spec: 
+        account: mockdataos
+        container: dropzone001
+        relativePath: "large_dataset_20200511"
+    external: true
+    compute: query-default 
+    connectionSecret: 
+        - acl: rw
+          type: key-value-properties
+          data:
+            azurestorageaccountname: "mockdataos"
+            azurestorageaccountkey: "QwfO54FD2OkzE+6H+yR0V0eR5x26vmRFXXH8eVzcRvFCaXBEJJKxXlhTqfElIQovHxqmVhkp5lWl+AStG+o7BQ=="

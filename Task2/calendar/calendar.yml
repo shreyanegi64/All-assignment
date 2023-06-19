@@ -1,0 +1,71 @@
+version: v1
+name: wf-sports-test-calendar       # Workflow name
+type: workflow
+tags:  
+  - calendar
+description: Workflow to ingest sports_data calendar csv
+workflow:  
+  title: calendar csv 
+  dag:    
+    - name: sports-test-calendar
+      title: sports_data Dag
+      description: This job ingests calendar csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - calendar    
+        stack: flare:3.0           
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_calendar                                                                                              
+                dataset: dataos://azureexternal01:sports_data/calender/
+                format: CSV
+                options:
+                  inferSchema : true
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: calendar                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                  sql: > 
+                    SELECT *
+                    from sports_data_calendar   
+                  functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: any_date 
+                        column: date
+                        asColumn: date
+
+                                                 
+            outputs:              
+              - name: calendar
+                dataset: dataos://icebase:sports/sample_calendar?acl=rw
+                format: Iceberg
+                title: sports_data
+                description: this dataset contains calendar csv from sports_data 
+                tags:                                                                     
+                  - calendar
+                options:                  
+                  saveMode: overwrite
+
+    
+    - name: dataos-tool-sports-test-calendar
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:sports/sample_calendar?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test-calendar
+
+

@@ -1,0 +1,14 @@
+version: v1
+name: profiling-datatool
+type: workflow
+workflow:
+  dag:
+    - name: dt-profiling
+      spec:  
+        stack: toolbox
+        compute: runnable-default
+        toolbox:
+          dataset: dataos://icebase:sys01/profiles?acl=rw
+          action:
+            name: set_version
+            value: latest

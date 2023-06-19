@@ -1,0 +1,183 @@
+---
+version: v1
+name: sports-test-return       # Workflow name
+type: workflow
+tags:  
+  - return
+description: Workflow to ingest sports_data return Table     # Workflow description
+workflow:  
+  title: sports_data
+  dag:    
+    - name: sports_test
+      title: sports_data Dag
+      description: This job ingests sports_data return Table into Survey Lake 
+      spec:        
+        tags:         
+          - return 
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:              
+              - name: sports_data_return                                                                                   # Definition files input                
+                dataset: /datadir/Sports/returns.csv
+                format: csv
+                options:
+                  inferSchema : true
+                # schemaType : sparkjson
+                # schemaPath: /datadir/schema/return_schema.json
+
+              - name: sports_data_calendar                                                                                   # Definition files input                
+                dataset: /datadir/Sports/calendar.csv
+                format: csv
+                options:
+                  inferSchema : true
+              #   # schemaType : sparkjson
+              #   # schemaPath: /datadir/schema/return_schema.json
+
+              - name: sports_data_customer                                                                                   # Definition files input                
+                dataset: /datadir/Sports/customers.csv
+                format: csv
+                options:
+                  inferSchema : true
+                # schemaType : sparkjson
+                # schemaPath: /datadir/schema/customer_schema.json
+
+              - name: sports_data_product                                                                                 # Definition files input                
+                dataset: /datadir/Sports/products.csv
+                format: csv
+                options:
+                  inferSchema : true
+
+              - name: sports_data_product_category                                                                                   # Definition files input                
+                dataset: /datadir/Sports/product_categories.csv
+                format: csv
+                options:
+                  inferSchema : true
+
+              - name: sports_data_product_sub_category                                                                                   # Definition files input                
+                dataset: /datadir/Sports/product_subcategories.csv
+                format: csv
+                options:
+                  inferSchema : true
+
+              - name: sports_data_sales                                                                               # Definition files input                
+                dataset: /datadir/Sports/sales/
+                format: csv
+                options:
+                  inferSchema : true
+    
+
+            logLevel: ERROR
+
+            outputs:
+              - name: output
+                depot: /datdir/out/
+
+            steps:              
+              - sequence:                  
+                  - name: return                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                    sql: > 
+                      SELECT * from sports_data_return
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: any_date 
+                        column: return_date
+                        asColumn: return_date
+                    
+                  - name: calendar
+                    sql: >
+                      SELECT * from sports_data_calendar
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: any_date 
+                        column: date
+                        asColumn: date
+                   
+                  - name: customer
+                    sql: >
+                      SELECT * from sports_data_customer
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: find_and_replace 
+                        column: annual_income
+                        sedExpression: "s/[$]//g"
+
+                      - name: find_and_replace 
+                        column: annual_income
+                        sedExpression: "s/,//g"
+
+                      - name: any_date 
+                        column: birth_date
+                        asColumn: birth_date
+                   
+                  - name: product
+                    sql: >
+                      SELECT * from sports_data_product
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                  - name: product_category
+                    sql: >
+                      SELECT * from sports_data_product_category
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                  - name: product_sub_category
+                    sql: >
+                      SELECT * from sports_data_product_sub_category
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                  - name: sales
+                    sql: >
+                      SELECT * from sports_data_sales
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: any_date 
+                        column: order_date
+                        asColumn: order_date
+
+                      - name: any_date 
+                        column: stock_date
+                        asColumn: stock_date
+
+                  
+                      
+                
+
+
+                    
+                  
+                  
+
+
+                      
+
+                     

@@ -1,0 +1,66 @@
+version: v1
+name: wf-test-customer       # Workflow name
+type: workflow
+tags:  
+  - customer
+description: Workflow to ingest customer csv
+workflow:  
+  title: customer csv 
+  dag:    
+    - name: test-customer
+
+      title: customer_data Dag
+      description: This job ingests customer csv into icebase catalog and data schema 
+      spec:     
+        tags:         
+          - customer    
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: customer_data                                                                                             
+                dataset: dataos://azureexternal01:sports_data/data/customers-100.csv
+                format: CSV
+                options:
+                  inferSchema : true
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: customer                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                  sql: > 
+                    SELECT *
+                    from customer_data  
+                  functions: 
+                      - name: cleanse_column_names
+                                                 
+            outputs:              
+              - name: customer
+                dataset: dataos://icebase:data/sample_customer?acl=rw
+                format: Iceberg
+                title: sports_data
+                description: this dataset contains customer csv from sports_data 
+                tags:                                                                     
+                  - customer
+                options:                  
+                  saveMode: overwrite
+
+    
+    - name: dataos-tool-test-customer       
+
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:data/sample_customer?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - test-customer       
+
+
+

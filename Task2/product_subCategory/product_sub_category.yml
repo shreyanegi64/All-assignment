@@ -1,0 +1,67 @@
+version: v1
+name: wf-sports-test-sub-category       # Workflow name
+type: workflow
+tags:  
+  - product_sub_category
+description: Workflow to ingest sports_data product_sub_category csv
+workflow:  
+  title: product_sub_category csv 
+  dag:    
+    - name: sports-test-sub-category
+      title: sports_data Dag
+      description: This job ingests product_sub_category csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - product_sub_category    
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_sub_category                                                                                              
+                dataset: dataos://azureexternal01:sports_data/product_subcategories/
+                format: CSV
+                options:
+                  inferSchema : true
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: product_sub_category                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                  sql: > 
+                    SELECT *
+                    from sports_data_sub_category   
+                  functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                                                 
+            outputs:              
+              - name: product_sub_category
+                dataset: dataos://icebase:sports/sample_product_sub_category?acl=rw
+                format: Iceberg
+                title: sports_data
+                description: this dataset contains product_sub_category csv from sports_data 
+                tags:                                                                     
+                  - product_sub_category
+                options:                  
+                  saveMode: overwrite
+
+    
+    - name: dataos-tool-sports-test-sub-category
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:sports/sample_product_sub_category?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test-sub-category
+
+

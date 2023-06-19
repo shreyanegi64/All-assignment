@@ -1,0 +1,124 @@
+---
+version: v1
+name: wf-sports-test-return       # Workflow name
+type: workflow
+tags:  
+  - Tier.Gold
+description: Workflow to ingest sports_data return csv
+workflow:  
+  title: return csv 
+  dag:    
+    - name: sports-test
+      title: sports_data Dag
+      description: This job ingests return csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - Tier.Gold    
+        stack: flare:3.0        
+        compute: runnable-default          
+        flare:                               
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_return                                                                                              
+                dataset: dataos://azureexternal01:sports_data/returns/ 
+                format: CSV
+                schemaType : sparkjson
+                schemaPath: dataos://azureexternal01:sports_data/schema/return_schema.json
+ 
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                  - name: return                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                    sql: > 
+                      SELECT *  from sports_data_return
+
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      # - name: find_and_replace 
+                      #   column: annual_income
+                      #   sedExpression: "s/[$]//g"
+
+                      # - name: find_and_replace 
+                      #   column: annual_income
+                      #   sedExpression: "s/,//g"
+
+                      # - name: set_type 
+                      #   columns: 
+                      #     customer_key: int 
+                      #     annual_income: int
+                      #     total_children: int
+
+                      - name: any_date 
+                        column: return_date
+                        asColumn: return_date
+
+                  # - name : monthly_return
+                  #   sql : >
+                  #     SELECT count(return_quantity) as return_qty ,
+                  #      month(return_date) as month
+                  #      FROM RETURN
+                  #      group by month(return_date)
+                  #      order by month(return_date)
+                      
+                  # - name : product_key_return
+                  #   sql : >
+                  #     SELECT product_key , 
+                  #      count(return_quantity) as product_returned
+                  #      FROM RETURN
+                  #      group by product_key
+                  #      order by count(return_quantity) desc
+
+                  # - name : product_returned
+                  #   sql : >
+                  #     select product_key , month(return_date) as month , 
+                  #      count(return_quantity) as product_returned 
+                  #      from return 
+                  #      group by 
+                  #      product_key , month(return_date) 
+                  #      order by 
+                  #      count(return_quantity) desc           
+                                                 
+            outputs:              
+              - name: return
+                dataset: dataos://icebase:test/returns1?acl=rw
+
+                title: sports_data
+                description: this dataset contains return csv from sports_data 
+                tags:                                                                     
+                  - return 
+                options:                  
+                  saveMode: overwrite
+                  sort:
+                    mode: partition 
+                    columns:
+                      - name: return_date 
+                        order: desc
+                  iceberg:
+                    properties:
+                        write.format.default: parquet
+                        write.metadata.compression-codec: gzip
+                    partitionSpec:                    
+                      - type: year          # options tested: identity, year, month, day, hour
+                        column: return_date    # columns used - identity (vendor_id, one string column) & for rest date_col
+                        name: year
+
+    - name: dataos-tool-sports-test1 
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:test/returns1?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test
+
+

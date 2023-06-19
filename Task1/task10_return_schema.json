@@ -1,0 +1,29 @@
+{
+    "type": "struct",
+    "fields": [
+        {
+            "name": "return_date",
+            "type": "date",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "territory_key",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "product_key",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        },
+        {
+            "name": "return_quantity",
+            "type": "integer",
+            "nullable": true,
+            "metadata": {}
+        }
+    ]
+}

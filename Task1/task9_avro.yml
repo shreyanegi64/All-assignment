@@ -1,0 +1,68 @@
+---
+version: v1
+name: sports-test-product       # Workflow name
+type: workflow
+tags:  
+  - product
+description: Workflow to ingest sports_data product Table     # Workflow description
+workflow:  
+  title: sports_data
+  dag:    
+    - name: sports_test
+      title: sports_data Dag
+      description: This job ingests sports_data product Table into Survey Lake 
+      spec:        
+        tags:         
+          - product 
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:              
+              - name: sports_data_product                                                                                   # Definition files input                
+                dataset: /datadir/Sports/products.csv
+                format: csv
+                schemaType : avro
+                schemaPath: /datadir/schema/schema_product.avsc
+  
+            
+            logLevel: ERROR
+
+            outputs:
+              - name: output
+                depot: /datdir/out/
+
+            steps:              
+              - sequence:                  
+                  - name: product                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                    sql: > 
+                      SELECT * from sports_data_product
+                    functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      # - name: find_and_replace 
+                      #   column: annual_income
+                      #   sedExpression: "s/[$]//g"
+
+                      # - name: find_and_replace 
+                      #   column: annual_income
+                      #   sedExpression: "s/,//g"
+
+                      # - name: set_type 
+                      #   columns: 
+                      #     customer_key: int 
+                      #     annual_income: int
+                      #     total_children: int
+
+                      # - name: any_date 
+                      #   column: birth_date
+                      #   asColumn: birth_date
+
+
+                      
+
+                     

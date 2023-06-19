@@ -1,0 +1,82 @@
+version: v1
+name: wf-sports-test-sales       # Workflow name
+type: workflow
+tags:  
+  - sales
+description: Workflow to ingest sports_data sales csv
+workflow:  
+  title: sales csv 
+  dag:    
+    - name: sports-test-sales
+      title: sports_data Dag
+      description: This job ingests sales csv into icebase catalog and sample schema 
+      spec:     
+        tags:         
+          - sales    
+        stack: flare:3.0        
+        compute: runnable-default
+        flare:         
+          job:            
+            explain: true            
+            inputs:                                
+              - name: sports_data_sales                                                                               # Definition files input                
+                dataset: dataos://azureexternal01:sports_data/sales/
+                format: csv
+                options:
+                  inferSchema : true 
+  
+            logLevel: INFO
+
+            steps:              
+              - sequence:                  
+                - name: sales                           # Reading columns from definition files.File names is used to create Survey Ids                    
+                  sql: > 
+                    SELECT * , input_file_name() as f_name
+                    from sports_data_sales   
+                  functions: 
+                      - name: cleanse_column_names
+
+                      - name: change_column_case 
+                        case: lower
+
+                      - name: any_date 
+                        column: order_date
+                        asColumn: order_date
+
+                      - name: any_date 
+                        column: stock_date
+                        asColumn: stock_date
+
+                - name: sales_final
+                  sql: >
+                    select * , cast(regexp_extract(f_name , '([^\\/](?!.*[\\/]).*).csv') as integer) as year
+                    from sales
+                  functions:
+                    - name: drop
+                      columns:  
+                        - f_name
+                                                 
+            outputs:              
+              - name: sales_final
+                dataset: dataos://icebase:sports/sample_sales?acl=rw
+                format: Iceberg
+                title: sports_data
+                description: this dataset contains sales csv from sports_data 
+                tags:                                                                     
+                  - sales
+                options:                  
+                  saveMode: overwrite
+
+    - name: dataos-tool-sports-test-sales
+      spec:        
+        stack: toolbox
+        compute: runnable-default
+        toolbox:          
+          dataset: dataos://icebase:sports/sample_sales?acl=rw
+          action:            
+            name: set_version
+            value: latest
+      dependencies:        
+        - sports-test-sales
+
+

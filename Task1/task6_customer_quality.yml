@@ -1,0 +1,77 @@
+version: v1
+name: customer-quality
+type: workflow
+tags:
+  - Metrics
+  - Checks
+description: The job performs metrics calculations and checks on customer data
+workflow:
+  dag:
+    - name: quality-customer
+      title: Metrics and checks
+      description: The job performs metrics calculations and checks on customer data
+      spec:
+        stack: flare:3.0
+        compute: runnable-default
+        flare:
+          job:
+            explain: true
+            logLevel: INFO
+
+            inputs:
+              - name: quality_customer
+                dataset: dataos://icebase:test/sample_customers
+                format: iceberg
+
+            assertions:
+              - column: customer_key
+                tests:
+                  - duplicate_count == 0
+                  - missing_count == 0 
+                  
+              - column: annual_income
+                tests: 
+                  - missing_count < 10
+                  - missing_percentage < 0.1  
+
+              # - column: annual_income  
+              #   tests:
+              #     - avg > 
+              #     - 
+
+
+              # - column: AnnualIncome
+              #   tests:
+              #     - avg > 
+
+            #   - column: zip_code
+            #     tests:     
+            #       - distinct_count > 30
+            #       - distinct_count < 30
+
+            #   - column: zip_code
+            #     filter: RACE == 'Black/African American'
+            #     tests:
+            #       - distinct_count > 10
+            #       - missing_count < 10
+
+              # - column: gender
+              #   validFormat:
+              #     regex: ^[M|F|Male|Female]{1,7}$
+              #   tests:
+              #     - missing_percentage < 0.1
+              #     - invalid_count == 0 
+
+              # - column: firstname
+              #   validFormat:
+              #     regex: ^[a-z,A-Z]{2,10}$
+              #   tests:
+              #     - missing_count == 0
+              #     - invalid_count > 10
+
+              # - column: lastname
+              #   validFormat:
+              #     regex: ^[a-z,A-Z]{2,15}$
+              #   tests:
+              #     - missing_count == 0
+              #     - invalid_count < 10

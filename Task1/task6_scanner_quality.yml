@@ -1,0 +1,27 @@
+version: v1
+name: quality-scanner
+type: workflow
+tags:
+description: The job scans schema tables and register metadata
+workflow:
+  dag:
+    - name: icebase-depot-quality
+      description: The job scans schema from icebase depot tables and register metadata to metis2
+      spec:
+        tags:
+          - scanner2.0
+        stack: scanner:2.0
+        compute: runnable-default
+        runAsUser: metis
+        scanner:
+          depot: dataos://icebase
+          type: data-quality
+          sourceConfig:
+            config:
+              schemaFilterPattern:
+                includes:
+                  - test
+
+              tableFilterPattern:
+                includes:
+                  - sample_customers

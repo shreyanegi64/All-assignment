@@ -1,0 +1,22 @@
+version: v1
+name: add-col-data-tool 
+type: workflow
+workflow:  
+  dag:    
+    - name: dataos-tool
+      spec:        
+        stack: alpha
+        compute: runnable-default
+        envs:          
+          LOG_LEVEL: debug
+        alpha:          
+          image: rubiklabs/dataos-tool:latest
+          arguments:            
+            - dataset
+            - add-column
+            - --address
+            - dataos://icebase:test/returns1?acl=rw
+            - --name
+            - current_timestamp
+            - --type
+            - timestamp_with_zone

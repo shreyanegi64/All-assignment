@@ -1,0 +1,26 @@
+version: v1
+name: customer-profiling
+type: workflow
+tags:
+description: The job is to profiling customers data for emr_healthcare of icebase
+workflow:
+  dag:
+    - name: profiling-customer
+      description: The job performs profiling on customer dataset
+      spec:
+        stack: flare:3.0
+        compute: runnable-default
+        persistentVolume:
+          name: persistent-v
+          directory: fides
+        flare:
+          job:
+            explain: true
+            inputs:
+              - name: profile_customer
+                dataset: dataos://icebase:test/sample_customers?acl=rw
+                format: Iceberg
+            logLevel: WARN
+            profile:
+              level: basic
+              
